@@ -1,0 +1,100 @@
+using System;
+using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Xml.Linq;
+using Applix.TM1.API;
+
+public partial class Cognos_Demo : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+        DataTable obj = createServer();
+        string t;
+
+    }
+
+    public DataTable createServer()
+    {
+        int nRtn = 0;
+
+        DataSet ds = new DataSet();
+        ds.Tables.Add("TM1DataTable");
+
+            TM1AdminServer admin = new TM1AdminServer("SERVERNAME", "tm1adminserver");
+            try
+            {
+
+                TM1Server server = admin.Servers["YOUR SERVER NAME"].Login("USERNAME", "PASSWORD");
+
+                if (server != null)
+                {
+                    TM1CubeCollection myCubes = server.Cubes;
+                    TM1Cube myCube = myCubes["INCOMESTATEMENT_CUBE"];
+                    TM1View view = myCube.PublicViews["Default"];
+                    TM1DataTable data = view.DataTable;
+
+                   
+                    int ColumnCount = view.ColumnTable.Rows[0].Cells.Count;
+                    int RowCount = view.RowTable.Rows.Count;
+                    DataRow rowNew = ds.Tables["TM1DataTable"].NewRow();
+
+                    DataTable dtclone = ds.Tables[0].Copy();
+
+                    for (int i = 0; i < ColumnCount; i++)
+                    {
+                        ds.Tables["TM1DataTable"].Columns.Add(view.ColumnTable.Rows[0].Cells[i].Value);
+                        // Get the first row in the TM1DataTable
+                        
+
+                    }
+                    
+                    
+
+                    TM1DataRow Row = data.Rows[0];
+                    int a = 0;
+                    // Now I loop through the TM1Rows and retrive their values 1 row at a time.
+                    foreach (TM1DataCell cell in Row.Cells)
+                    {
+                        // bind the cell value to the first column, second column, etc...
+                        rowNew[a] = cell.Value;
+                        a++;
+                    }
+                    // The row now has values... Add it to the Table. 
+                    ds.Tables["TM1DataTable"].Rows.Add(rowNew);
+                    
+                    // Go back and add all the rows until you hit the last row.
+                    // Dispose of the objects in memory... This doesn't delete them it just clears out the garbage.
+                    admin.Dispose();
+                    data.Dispose();
+                    view.Dispose();
+                    admin.LogoutAll();
+                    // Return the Table... Now you can call this funcition and bind the table to a GridView, a Chart or whatever you need.
+
+                    return ds.Tables["TM1DataTable"];
+
+                    admin.LogoutAll();
+                    admin.Dispose();
+                }
+            }
+            catch (Exception exc)
+            {
+                nRtn = -2;
+            }
+
+            return null;
+    }
+}
+
+
+
+    
+
