@@ -68,7 +68,7 @@ public partial class Cognos_Demo : System.Web.UI.Page
                         rowNew[a] = cell.Value;
                         a++;
                     }
-                    // The row now has values... Add it to the Table. 
+                    // Now, row has values... Add it to the Table. 
                     ds.Tables["TM1DataTable"].Rows.Add(rowNew);
                     
                     // Go back and add all the rows until you hit the last row.
